@@ -236,6 +236,44 @@ class ApiService {
     throw ApiException(res.statusCode, _extractDetail(res.body));
   }
 
+  static Future<List<MemoryItem>> searchMemories({
+    String userId = 'demo_user',
+    String query = '',
+    String? category,
+    int limit = 10,
+  }) async {
+    final catParam = category != null && category.isNotEmpty ? '&category=$category' : '';
+    final res = await http.get(
+      Uri.parse('$baseUrl/memory/search?user_id=$userId&query=${Uri.encodeComponent(query)}$catParam&limit=$limit'),
+    );
+    if (res.statusCode == 200) {
+      final List list = jsonDecode(res.body);
+      return list.map((e) => MemoryItem.fromJson(e)).toList();
+    }
+    throw ApiException(res.statusCode, _extractDetail(res.body));
+  }
+
+  static Future<MemoryItem> getMemoryDetail({
+    required String memoryId,
+    String userId = 'demo_user',
+  }) async {
+    final data = await _get('/memory/$memoryId?user_id=$userId');
+    return MemoryItem.fromJson(data);
+  }
+
+  static Future<void> deleteMemory({
+    required String memoryId,
+    String userId = 'demo_user',
+  }) async {
+    await _delete('/memory/$memoryId?user_id=$userId');
+  }
+
+  static Future<List<Map<String, dynamic>>> getMemoryCategories() async {
+    final data = await _get('/memory/categories');
+    final List list = data['categories'] ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
   // ─── Agent ─────────────────────────────────────────────────────────────────
 
   static Future<StructuredAgentResponse> sendAgentMessage(

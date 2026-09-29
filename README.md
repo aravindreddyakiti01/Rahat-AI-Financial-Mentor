@@ -1,6 +1,6 @@
 # Rahat — AI Financial Mentor for Gig Workers
 
-Rahat is a mobile-first AI financial mentor designed for gig workers whose income is irregular but whose financial obligations are recurring. Instead of treating every conversation as a fresh interaction, Rahat learns from meaningful financial decisions and outcomes over time. 
+Rahat is a mobile-first AI financial mentor designed for gig workers whose income is irregular but whose financial obligations are recurring. Instead of treating every conversation as a fresh interaction, Rahat learns from meaningful financial decisions and outcomes over time.
 
 The core loop is:
 $$\text{Decision} \longrightarrow \text{Action} \longrightarrow \text{Outcome} \longrightarrow \text{Memory} \longrightarrow \text{Better Future Decision}$$
@@ -179,60 +179,70 @@ Rahat integrates [Hindsight](https://github.com/vectorize-io/hindsight) for long
 | Layer | Technology |
 | :--- | :--- |
 | **Mobile Frontend** | Flutter (Dart) |
-| **Backend Gateway** | Python 3.14 / FastAPI / Uvicorn |
+| **Backend Gateway** | Python 3.10+ / FastAPI / Uvicorn |
 | **Agent Orchestration** | LangGraph (`StateGraph`) |
 | **LLM Gateway** | Google Gemini API (`gemini-3.1-flash-lite-preview` cascade) |
 | **Long-Term Memory** | Hindsight Memory Service |
 | **Session Cache** | Redis / FakeRedis fallback |
 | **Database** | SQLite (`sqlite3`) |
-| **Testing** | Automated Pytest / Python Async Test Suites |
+| **Testing** | Python async test suites (104 verified tests) |
 
 ---
 
 ## 9. Repository Structure
 
 ```
-Rahat-AI-Financial-Mentor/
+rahat/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
-├── .env.example
 ├── backend/
 │   ├── app/
 │   │   ├── agent/
-│   │   │   ├── graph.py
-│   │   │   ├── llm.py
-│   │   │   ├── state.py
-│   │   │   └── tools.py
+│   │   │   ├── graph.py          # LangGraph 6-node pipeline
+│   │   │   ├── llm.py            # Gemini cascade + deterministic fallback
+│   │   │   ├── state.py          # AgentState TypedDict
+│   │   │   └── tools.py          # Controlled financial write tools
 │   │   ├── core/
-│   │   │   ├── cache.py
+│   │   │   ├── cache.py          # Redis / FakeRedis
 │   │   │   └── config.py
 │   │   ├── db/
-│   │   │   ├── database.py
-│   │   │   └── repository.py
+│   │   │   ├── database.py       # SQLite schema & init
+│   │   │   └── repository.py     # All data access functions
 │   │   ├── memory/
-│   │   │   └── hindsight.py
+│   │   │   └── hindsight.py      # Hindsight memory engine
 │   │   ├── routers/
 │   │   │   ├── agent.py
 │   │   │   ├── finance.py
 │   │   │   ├── goals.py
+│   │   │   ├── insights.py
 │   │   │   └── memory.py
 │   │   ├── schemas/
-│   │   └── main.py
+│   │   └── main.py               # FastAPI app entrypoint
 │   ├── .env.example
 │   ├── requirements.txt
-│   ├── test_rahat.py
-│   ├── test_step2.py
-│   ├── test_step3.py
-│   ├── test_step4.py
-│   ├── test_step5.py
-│   ├── test_step6.py
-│   └── verify_step6_goals.py
+│   ├── test_rahat.py             # Step 1: Architecture (4 tests)
+│   ├── test_step2.py             # Step 2: Financial persistence (15 tests)
+│   ├── test_step3.py             # Step 3: LangGraph agent (15 tests)
+│   ├── test_step4.py             # Step 4: Hindsight memory (18 tests)
+│   ├── test_step5.py             # Step 5: LLM integration (20 tests)
+│   ├── test_step6.py             # Step 6: Goals & planning (19 tests)
+│   ├── test_step7.py             # Step 7: Memory experience (13 tests)
+│   ├── test_runner_all.py        # Runs all 104 tests sequentially
+│   ├── audit_test_suite.py       # End-to-end workflow audit (11 checks)
+│   └── verify_security.py        # Scans source for hardcoded secrets
 ├── mobile/
 │   ├── lib/
 │   │   ├── models/
+│   │   │   └── models.dart
 │   │   ├── screens/
+│   │   │   ├── mentor_screen.dart
+│   │   │   ├── money_screen.dart
+│   │   │   ├── memory_screen.dart
+│   │   │   ├── insights_screen.dart
+│   │   │   └── settings_screen.dart
 │   │   ├── services/
+│   │   │   └── api_service.dart
 │   │   └── main.dart
 │   ├── assets/
 │   └── pubspec.yaml
@@ -311,7 +321,7 @@ flutter run
 
 ## 12. Testing & Verification
 
-The Rahat implementation has been verified through a 6-step automated test suite:
+Rahat is verified through a 7-step automated test suite covering 104 tests:
 
 ```
 ======================================================================
@@ -323,20 +333,29 @@ The Rahat implementation has been verified through a 6-step automated test suite
   Step 4 (Hindsight Memory System):          18 / 18  PASS
   Step 5 (Real LLM Integration & Chat):      20 / 20  PASS
   Step 6 (Goals & Adaptive Planning):        19 / 19  PASS
+  Step 7 (Memory Experience):                13 / 13  PASS
 ======================================================================
-  CUMULATIVE VERIFIED TOTAL:                 91 / 91 PASS (100%)
+  CUMULATIVE VERIFIED TOTAL:                104 / 104 PASS (100%)
 ======================================================================
 ```
 
-Run all test suites:
+Run the full suite:
 ```bash
 cd backend
-python test_rahat.py
-python test_step2.py
-python test_step3.py
-python test_step4.py
-python test_step5.py
-python test_step6.py
+python test_runner_all.py
+```
+
+Run individual steps or the end-to-end audit:
+```bash
+python test_rahat.py       # Step 1
+python test_step2.py       # Step 2
+python test_step3.py       # Step 3
+python test_step4.py       # Step 4
+python test_step5.py       # Step 5
+python test_step6.py       # Step 6
+python test_step7.py       # Step 7
+python audit_test_suite.py # End-to-end workflow audit (11 checks)
+python verify_security.py  # Scan for hardcoded secrets
 ```
 
 ---
@@ -351,16 +370,16 @@ Screenshots are located in `docs/screenshots/`:
 - `04_insights.png`: Earning pattern analysis and fuel cost ratio
 
 ### Video Demo
-- **Watch the Rahat 60-Second Demo Video:** `[YouTube Demo Link]`
+- **Watch the Rahat Demo:** *(link will be added after upload)*
 - Detailed walkthrough script available at `docs/demo/demo.md`.
 
 ---
 
 ## 14. Current Limitations
 
-- **Voice Interaction:** Speech-to-text input is designed in the UI layer; audio processing pipeline is scheduled for a post-hackathon release.
-- **Receipt OCR:** Receipt scanning UI placeholder exists; document vision integration is planned as a subsequent module.
-- **Deterministic Memory Ranking:** Memory retrieval currently uses keyword + type relevance scoring; semantic vector embeddings will be integrated in future Hindsight updates.
+- **Voice Interaction:** Speech-to-text input is not yet implemented; the UI layer is prepared for it.
+- **Receipt OCR:** Document scanning is planned as a future module.
+- **Deterministic Memory Ranking:** Memory retrieval currently uses keyword + type relevance scoring; semantic vector embeddings are planned for a future update.
 - **Historical Horizon:** Earning pattern analysis relies on available historical transaction logs (7–30 day window).
 
 ---
@@ -387,7 +406,7 @@ Screenshots are located in `docs/screenshots/`:
 - **Secrets Protection:** No credentials or API keys are committed to the repository.
 - **Control Flow Boundary:** All database write operations are performed through controlled backend tools (`record_transaction`, `create_goal`).
 - **User Isolation:** All SQLite and Hindsight queries strictly isolate data by `user_id`.
-- **Advisory Boundary:** Rahat provides practical budgeting/cash-flow guidance only; it refuses to offer investment, stock, tax, or loan advice.
+- **Advisory Boundary:** Rahat provides practical budgeting/cash-flow guidance only; it does not offer investment, stock, tax, or loan advice.
 
 ---
 

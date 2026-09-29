@@ -165,6 +165,10 @@ class MemoryItem {
   final String outcomeStatus;
   final String date;
   final List<String> tags;
+  final String? relatedGoalId;
+  final String? relatedPlanId;
+  final double importance;
+  final String source;
 
   const MemoryItem({
     required this.id,
@@ -175,6 +179,10 @@ class MemoryItem {
     required this.outcomeStatus,
     required this.date,
     required this.tags,
+    this.relatedGoalId,
+    this.relatedPlanId,
+    this.importance = 1.0,
+    this.source = 'system',
   });
 
   factory MemoryItem.fromJson(Map<String, dynamic> json) {
@@ -187,6 +195,10 @@ class MemoryItem {
       outcomeStatus: json['outcome_status'] ?? 'observed',
       date: json['date'] ?? '',
       tags: List<String>.from(json['relevance_tags'] ?? []),
+      relatedGoalId: json['related_goal_id'],
+      relatedPlanId: json['related_plan_id'],
+      importance: (json['importance'] ?? 1.0).toDouble(),
+      source: json['source'] ?? 'system',
     );
   }
 }

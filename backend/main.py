@@ -272,6 +272,38 @@ def get_memory_timeline(user_id: str = "demo_user"):
     """
     return hindsight.get_timeline(user_id)
 
+@app.get("/memory/search")
+def search_memories(
+    user_id: str = Query("demo_user"),
+    query: str = Query(""),
+    category: Optional[str] = Query(None),
+    limit: int = Query(4, ge=1, le=10),
+):
+    return hindsight.search_memories(user_id=user_id, query=query, category=category, limit=limit)
+
+@app.get("/memory/categories")
+def get_memory_categories():
+    return {
+        "categories": [
+            {"type": "profile_fact", "description": "Stable characteristics about the gig worker."},
+            {"type": "preference", "description": "User preferences relevant to pacing and budgeting."},
+            {"type": "plan", "description": "Formulated savings pacing strategy."},
+            {"type": "outcome", "description": "Real-world result or friction after executing a plan."},
+            {"type": "pattern", "description": "Derived behavioral or earning pattern."},
+        ]
+    }
+
+@app.get("/memory/plan/{plan_id}/outcomes")
+def get_plan_outcomes(plan_id: str, user_id: str = Query("demo_user")):
+    return hindsight.get_plan_outcomes(user_id=user_id, plan_id=plan_id)
+
+@app.get("/memory/{memory_id}")
+def get_memory(memory_id: str, user_id: str = Query("demo_user")):
+    mem = hindsight.get_memory_by_id(user_id, memory_id)
+    if not mem:
+        raise HTTPException(status_code=404, detail=f"Memory '{memory_id}' not found")
+    return mem
+
 @app.post("/memory")
 def add_memory_endpoint(req: MemoryCreateRequest, user_id: str = "demo_user"):
     return hindsight.store_memory(
@@ -287,7 +319,9 @@ def add_memory_endpoint(req: MemoryCreateRequest, user_id: str = "demo_user"):
 @app.delete("/memory/{memory_id}")
 def delete_memory_endpoint(memory_id: str, user_id: str = "demo_user"):
     deleted = hindsight.delete_memory(user_id, memory_id)
-    return {"deleted": deleted}
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Memory '{memory_id}' not found")
+    return {"deleted": deleted, "id": memory_id}
 
 @app.post("/memory/clear")
 def clear_memories_endpoint(user_id: str = "demo_user"):

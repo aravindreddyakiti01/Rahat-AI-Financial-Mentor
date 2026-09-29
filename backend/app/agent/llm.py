@@ -145,7 +145,7 @@ Provide a clear, grounded response with actionable guidance tailored to their ac
         for model in GEMINI_CANDIDATE_MODELS:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self._key}"
             try:
-                with httpx.Client(timeout=8.0) as client:
+                with httpx.Client(timeout=3.0) as client:
                     resp = client.post(url, json=payload)
                     if resp.status_code == 200:
                         data = resp.json()
@@ -161,6 +161,9 @@ Provide a clear, grounded response with actionable guidance tailored to their ac
                                 }
                     else:
                         logger.warning(f"Model {model} returned status {resp.status_code}, trying next candidate.")
+            except (httpx.TimeoutException, httpx.NetworkError) as e:
+                logger.warning(f"Gemini call to {model} timed out ({type(e).__name__}); falling back to deterministic reasoning.")
+                break
             except Exception as e:
                 logger.warning(f"Gemini call to {model} failed ({type(e).__name__}), trying next candidate.")
                 continue
